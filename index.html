@@ -38,7 +38,9 @@ td{padding:10px 6px;border-bottom:1px solid var(--line2);white-space:nowrap}
 .mini{width:100%;font-size:12px;margin-top:8px}.mini td,.mini th{padding:5px 3px}
 .foot{margin-top:16px;font-size:12px;color:#55636f;line-height:1.5}
 .err{color:var(--red);padding:14px 6px}
+.grid>*{min-width:0}
 @media (max-width:900px){.grid{grid-template-columns:1fr}.wrap{padding:18px 14px}h1{font-size:23px}}
+@media (max-width:640px){.wide{display:none}}
 </style>
 <script defer src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "d66a3ce27f4e4b47bb1eb31a0e5fa912"}'></script>
 </head>
@@ -49,7 +51,7 @@ td{padding:10px 6px;border-bottom:1px solid var(--line2);white-space:nowrap}
 <div class="note" id="openNote" hidden>Wall Street is open, so prices on Base track the exchange and the gaps below are mostly noise. The real test is at night and over the weekend.</div>
 <div class="grid">
   <div class="box">
-    <table><thead><tr><th>STOCK</th><th class="n">BASE NOW</th><th class="n" id="closeHead">LAST CLOSE</th><th class="n">AFTER-HOURS</th><th class="n">GAP</th><th>VERDICT</th><th class="n">$1,000 ROUND TRIP</th></tr></thead>
+    <table><thead><tr><th>STOCK</th><th class="n">BASE NOW</th><th class="n wide" id="closeHead">LAST CLOSE</th><th class="n wide">AFTER-HOURS</th><th class="n">GAP</th><th>VERDICT</th><th class="n wide">$1,000 ROUND TRIP</th></tr></thead>
     <tbody id="rows"><tr><td colspan="7" class="dim">Loading prices…</td></tr></tbody></table>
     <button class="more" id="more" hidden></button>
   </div>
@@ -132,8 +134,8 @@ async function renderTable() {
   live.sort((a, b) => Math.abs(b.gap) - Math.abs(a.gap));
   const row = (r) => {
     const [label, col] = verdict(r.gap);
-    return `<tr><td><b>${r.ticker}</b><span class="t">${r.symbol}</span></td><td class="n">${money(r.base)}</td><td class="n dim">${money(r.close)}</td><td class="n dim">${r.ah != null ? money(r.ah) : '–'}</td>`
-      + `<td class="n" style="color:${col};font-weight:700">${pct(r.gap)}</td><td><span class="pill" style="border-color:${col};color:${col}">${label}</span></td><td class="n">${money(r.keep)}</td></tr>`;
+    return `<tr><td><b>${r.ticker}</b><span class="t">${r.symbol}</span></td><td class="n">${money(r.base)}</td><td class="n dim wide">${money(r.close)}</td><td class="n dim wide">${r.ah != null ? money(r.ah) : '–'}</td>`
+      + `<td class="n" style="color:${col};font-weight:700">${pct(r.gap)}</td><td><span class="pill" style="border-color:${col};color:${col}">${label}</span></td><td class="n wide">${money(r.keep)}</td></tr>`;
   };
   const loud = live.filter((r) => Math.abs(r.gap) >= QUIET), quiet = live.filter((r) => Math.abs(r.gap) < QUIET);
   rowsLoud = loud.map(row).join(''); rowsQuiet = quiet.map(row).join(''); quietCount = quiet.length;
