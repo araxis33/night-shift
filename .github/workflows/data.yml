@@ -1,0 +1,57 @@
+name: data
+
+# closes:  after every US session ends (after-hours stop at 20:00 New York time),
+#          the regular close and the last after-hours trade for each stock.
+# night:   Monday, about an hour before the open: what Base priced over the weekend.
+# open:    Monday, after the open: how each stock really opened.
+# Times are UTC and follow New York winter time (open 14:30 UTC); both runs of
+# each pair are listed so summer time (open 13:30 UTC) is covered too.
+on:
+  schedule:
+    - cron: "20 1 * * 2-6"   # closes (winter)
+    - cron: "20 0 * * 2-6"   # closes (summer)
+    - cron: "25 13 * * 1"    # night (winter; summer this lands just before 13:30)
+    - cron: "5 15 * * 1"     # open (winter)
+  workflow_dispatch:
+    inputs:
+      job:
+        description: "closes, night or open"
+        required: true
+        default: closes
+
+permissions:
+  contents: write
+
+concurrency: data
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Pick the job
+        id: pick
+        run: |
+          if [ -n "${{ github.event.inputs.job }}" ]; then echo "job=${{ github.event.inputs.job }}" >> "$GITHUB_OUTPUT"; exit 0; fi
+          case "${{ github.event.schedule }}" in
+            "25 13 * * 1") echo "job=night" >> "$GITHUB_OUTPUT" ;;
+            "5 15 * * 1") echo "job=open" >> "$GITHUB_OUTPUT" ;;
+            *) echo "job=closes" >> "$GITHUB_OUTPUT" ;;
+          esac
+      - run: |
+          case "${{ steps.pick.outputs.job }}" in
+            closes) node scripts/closes.mjs ;;
+            night) node scripts/monday.mjs night ;;
+            open) node scripts/monday.mjs open ;;
+          esac
+      - name: Save
+        run: |
+          git config user.name "night-shift data"
+          git config user.email "actions@users.noreply.github.com"
+          git add data
+          git diff --cached --quiet || git commit -m "data: ${{ steps.pick.outputs.job }} $(date -u +%F)"
+          git push
