@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en" translate="no">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Night Shift · US stocks on Base while Wall Street sleeps</title>
+<meta name="description" content="Is it a good price right now? US stocks on Base after the closing bell, next to the last real trade, and what you keep on a $1,000 round trip.">
+<meta property="og:title" content="Night Shift · US stocks on Base while Wall Street sleeps">
+<meta property="og:description" content="Base price vs the last real trade, after-hours included. Every Monday: what the night priced in vs the real open.">
+<meta property="og:url" content="https://night.deftools.xyz/">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%2305070b'/%3E%3Ctext x='5' y='22' font-family='monospace' font-size='15' font-weight='700' fill='%233ddc84'%3E%3E_%3C/text%3E%3C/svg%3E">
+<style>
+:root{--bg:#05070b;--box:#0c1219;--line:#1a2430;--line2:#121a23;--fg:#e6edf3;--mut:#9aa7b4;--dim:#6f7d8a;--green:#3ddc84;--amber:#f0b429;--red:#ff7b72}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);font-family:Inter,"Segoe UI",Arial,sans-serif;color:var(--fg)}
+a{color:inherit}
+.wrap{max-width:1160px;margin:0 auto;padding:26px 30px 32px}
+.top{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.logo{font-weight:800;font-size:22px;text-decoration:none}.logo b{color:var(--green);font-family:Consolas,monospace;margin-right:8px}
+.status{font-size:13px;color:var(--mut);border:1px solid #1d2733;border-radius:20px;padding:6px 12px}.status i{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--amber);margin-right:6px}
+.status.open i{background:var(--green)}
+h1{font-size:28px;margin:22px 0 6px}.sub{color:var(--mut);font-size:15px;margin-bottom:18px;line-height:1.45}
+.note{background:#0f1a14;border:1px solid #1d3a2a;color:#b9e8cc;border-radius:12px;padding:10px 14px;font-size:14px;margin-bottom:14px}
+.grid{display:grid;grid-template-columns:1fr 300px;gap:16px}
+.box{background:var(--box);border:1px solid var(--line);border-radius:14px;padding:6px 14px 10px;overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:14px}
+th{text-align:left;font-size:11px;letter-spacing:.6px;color:var(--dim);font-weight:600;padding:10px 6px;border-bottom:1px solid var(--line);white-space:nowrap}
+td{padding:10px 6px;border-bottom:1px solid var(--line2);white-space:nowrap}
+.n{text-align:right;font-variant-numeric:tabular-nums}th.n{text-align:right}.dim{color:#8b98a5}
+.t{display:block;font-size:11px;color:var(--dim)}
+.pill{font-size:11px;border:1px solid;border-radius:6px;padding:2px 7px}
+.more{font-size:13px;color:#7d8a97;padding:10px 6px 2px;cursor:pointer;background:none;border:0;font-family:inherit}
+.more:hover{color:var(--fg)}
+.side{display:flex;flex-direction:column;gap:14px}
+.card{background:var(--box);border:1px solid var(--line);border-radius:14px;padding:16px}
+.card h3{margin:0 0 8px;font-size:15px}.card p{margin:6px 0;font-size:13px;color:var(--mut);line-height:1.45}
+.green{color:var(--green)}.warn{border-color:#4a2a2a}.warn h3{color:var(--red)}
+.mini{width:100%;font-size:12px;margin-top:8px}.mini td,.mini th{padding:5px 3px}
+.foot{margin-top:16px;font-size:12px;color:#55636f;line-height:1.5}
+.err{color:var(--red);padding:14px 6px}
+@media (max-width:900px){.grid{grid-template-columns:1fr}.wrap{padding:18px 14px}h1{font-size:23px}}
+</style>
+<script defer src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "d66a3ce27f4e4b47bb1eb31a0e5fa912"}'></script>
+</head>
+<body><div class="wrap">
+<div class="top"><a class="logo" href="./"><b>&gt;_</b>Night Shift</a><div class="status" id="status"><i></i>…</div></div>
+<h1>Is it a good price right now?</h1>
+<div class="sub">US stocks on Base while Wall Street sleeps. Compared with the last real trade, after-hours included, and what you keep if you buy $1,000 and sell it back.</div>
+<div class="note" id="openNote" hidden>Wall Street is open, so prices on Base track the exchange and the gaps below are mostly noise. The real test is at night and over the weekend.</div>
+<div class="grid">
+  <div class="box">
+    <table><thead><tr><th>STOCK</th><th class="n">BASE NOW</th><th class="n" id="closeHead">LAST CLOSE</th><th class="n">AFTER-HOURS</th><th class="n">GAP</th><th>VERDICT</th><th class="n">$1,000 ROUND TRIP</th></tr></thead>
+    <tbody id="rows"><tr><td colspan="7" class="dim">Loading prices…</td></tr></tbody></table>
+    <button class="more" id="more" hidden></button>
+  </div>
+  <div class="side">
+    <div class="card" id="monday"><h3 class="green">Monday check</h3><p>Every weekend: what the night priced in, next to how each stock really opened. The record builds up, week after week.</p><p style="color:#55636f" id="mondayNext"></p></div>
+    <div class="card warn" id="trapCard" hidden><h3 id="trapTitle"></h3><p id="trapText"></p></div>
+    <div class="card"><h3>During market hours</h3><p>Prices on Base track the exchange. The page says so, and the Monday check shows how the last weekend went.</p></div>
+    <div class="card"><h3 style="color:#9aa7b4">Call the open <span class="pill" style="border-color:#33414f;color:#9aa7b4">phase 2</span></h3><p>Higher or lower on Monday? Sign, no money, weekly leaderboard.</p></div>
+  </div>
+</div>
+<div class="foot" id="foot">Base prices: KyberSwap quotes via <a href="https://deftools.xyz/stocks.html">Stock Check</a>, refreshed every 30 minutes · close and after-hours: Yahoo Finance · round trip = quote to buy $1,000 and sell the same back · not financial advice · part of <a href="https://deftools.xyz">deftools</a></div>
+</div>
+<script>
+const STOCK_DATA = 'https://deftools-check.araxis67.workers.dev/stock-data';
+const TRAP = 5;      // % lost on a $1,000 round trip: above this the Base price means nothing
+const QUIET = 0.5;   // gaps smaller than this fold away
+const NY = 'America/New_York';
+
+const $ = (id) => document.getElementById(id);
+const money = (v) => '$' + v.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+const pct = (v) => (v > 0 ? '+' : '') + v.toFixed(1) + '%';
+
+// New York wall-clock parts for a moment in time.
+function nyParts(d) {
+  const p = Object.fromEntries(new Intl.DateTimeFormat('en-US', { timeZone: NY, weekday: 'short', year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', hour12: false })
+    .formatToParts(d).map((x) => [x.type, x.value]));
+  return { wd: p.weekday, h: +p.hour % 24, m: +p.minute, y: +p.year, mo: +p.month, d: +p.day };
+}
+const isWeekday = (wd) => !['Sat', 'Sun'].includes(wd);
+function marketOpen(d = new Date()) {
+  const p = nyParts(d), mins = p.h * 60 + p.m;
+  return isWeekday(p.wd) && mins >= 570 && mins < 960;
+}
+// Next 9:30 New York open, as a Date (holidays not counted).
+function nextOpen(from = new Date()) {
+  for (let i = 0; i < 8 * 24 * 4; i++) {
+    const t = new Date(Math.ceil(from.getTime() / 900000) * 900000 + i * 900000);
+    const p = nyParts(t);
+    if (isWeekday(p.wd) && p.h === 9 && p.m === 30 && t > from) return t;
+  }
+  return null;
+}
+const utc = (d) => d.toLocaleString('en-GB', { timeZone: 'UTC', weekday: 'short', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }).replace(',', '') + ' UTC';
+const utcTime = (d) => d.toLocaleString('en-GB', { timeZone: 'UTC', weekday: 'short', hour: '2-digit', minute: '2-digit' }).replace(',', '') + ' UTC';
+
+function renderStatus() {
+  const open = marketOpen();
+  const s = $('status');
+  s.classList.toggle('open', open);
+  s.innerHTML = open ? '<i></i>NYSE open · Base tracks it' : `<i></i>NYSE closed · opens ${utcTime(nextOpen())} · Base is open`;
+  $('openNote').hidden = !open;
+}
+
+function verdict(g) {
+  g = Math.round(g * 10) / 10; // judge the number the page shows
+  if (g >= 2) return ['pricey', 'var(--amber)'];
+  if (g <= -2) return ['cheap', 'var(--green)'];
+  return ['fair', '#7d8a97'];
+}
+
+async function getJSON(url) {
+  const r = await fetch(url, { cache: 'no-store' });
+  if (!r.ok) throw new Error(url + ' ' + r.status);
+  return r.json();
+}
+
+let rowsLoud = '', rowsQuiet = '', quietCount = 0;
+async function renderTable() {
+  const [sd, cl] = await Promise.all([getJSON(STOCK_DATA), getJSON('data/closes.json')]);
+  const live = [], traps = [];
+  for (const [symbol, v] of Object.entries(sd.items)) {
+    const ticker = symbol.replace(/c$/, '');
+    const c = cl.items[ticker];
+    const loss = v.rt?.loss;
+    if (v.dex == null || loss == null || !c) continue;
+    if (loss >= TRAP) { traps.push({ ticker, loss }); continue; }
+    const ref = c.ah ?? c.close;
+    live.push({ ticker, symbol, base: v.dex, close: c.close, closeAt: c.closeAt, ah: c.ah, gap: (v.dex / ref - 1) * 100, keep: 1000 * (1 - loss / 100) });
+  }
+  live.sort((a, b) => Math.abs(b.gap) - Math.abs(a.gap));
+  const row = (r) => {
+    const [label, col] = verdict(r.gap);
+    return `<tr><td><b>${r.ticker}</b><span class="t">${r.symbol}</span></td><td class="n">${money(r.base)}</td><td class="n dim">${money(r.close)}</td><td class="n dim">${r.ah != null ? money(r.ah) : '–'}</td>`
+      + `<td class="n" style="color:${col};font-weight:700">${pct(r.gap)}</td><td><span class="pill" style="border-color:${col};color:${col}">${label}</span></td><td class="n">${money(r.keep)}</td></tr>`;
+  };
+  const loud = live.filter((r) => Math.abs(r.gap) >= QUIET), quiet = live.filter((r) => Math.abs(r.gap) < QUIET);
+  rowsLoud = loud.map(row).join(''); rowsQuiet = quiet.map(row).join(''); quietCount = quiet.length;
+  $('rows').innerHTML = rowsLoud || '<tr><td colspan="7" class="dim">Every stock is within ±0.5% of its last real trade.</td></tr>';
+  const more = $('more');
+  more.hidden = !quietCount;
+  more.textContent = `+ ${quietCount} more within ±0.5% of after-hours · show`;
+  more.onclick = () => { $('rows').innerHTML = rowsLoud + rowsQuiet; more.hidden = true; };
+
+  const lastClose = live[0] && new Date(live[0].closeAt * 1000);
+  if (lastClose) $('closeHead').textContent = nyParts(lastClose).wd.toUpperCase() + ' CLOSE';
+
+  if (traps.length) {
+    traps.sort((a, b) => b.loss - a.loss);
+    const lo = Math.floor(Math.min(...traps.map((t) => t.loss))), hi = Math.floor(Math.max(...traps.map((t) => t.loss)));
+    $('trapCard').hidden = false;
+    $('trapTitle').textContent = `${traps.length} stocks have no real market on Base`;
+    $('trapText').textContent = `Buy $1,000 and sell it back, and you lose ${lo}–${hi}%. Their prices here mean nothing, so they are left out: ${traps.map((t) => t.ticker).join(', ')}.`;
+  }
+  const at = new Date(Math.max(...Object.values(sd.items).map((v) => v.dexTs || 0)));
+  $('foot').insertAdjacentHTML('afterbegin', `Base prices as of ${utc(at)} · `);
+}
+
+async function renderMonday() {
+  let index = [];
+  try { index = await getJSON('data/checks/index.json'); } catch (e) { /* none yet */ }
+  const done = [];
+  for (const date of index.slice(0, 6)) {
+    try { const c = await getJSON(`data/checks/${date}.json`); if (c.openAt) done.push(c); } catch (e) { /* skip */ }
+  }
+  if (!done.length) {
+    const n = nextOpen();
+    $('mondayNext').textContent = `First one: ${n ? utc(n).replace(/ \d\d:\d\d UTC$/, '') : 'next Monday'}, after the open`;
+    return;
+  }
+  const c = done[0];
+  const rows = Object.entries(c.items).filter(([, i]) => i.open != null).map(([t, i]) => ({ t, night: (i.base / i.ref - 1) * 100, open: (i.open / i.ref - 1) * 100 }))
+    .sort((a, b) => Math.abs(b.night) - Math.abs(a.night));
+  const called = rows.filter((r) => Math.abs(r.night) >= QUIET);
+  const right = called.filter((r) => Math.sign(r.night) === Math.sign(r.open)).length;
+  const date = new Date(c.date + 'T12:00:00Z').toLocaleDateString('en-GB', { day: 'numeric', month: 'short', timeZone: 'UTC' });
+  $('monday').innerHTML = `<h3 class="green">Monday check · ${date}</h3>`
+    + `<p>${called.length ? `The night moved ${called.length} stock${called.length > 1 ? 's' : ''} by 0.5% or more. The open went the same way for <b style="color:var(--fg)">${right} of ${called.length}</b>.` : 'The night kept every stock within 0.5% of its last trade.'}</p>`
+    + `<table class="mini"><tr><th>STOCK</th><th class="n">NIGHT</th><th class="n">OPEN</th><th></th></tr>`
+    + rows.slice(0, 6).map((r) => `<tr><td><b>${r.t}</b></td><td class="n">${pct(r.night)}</td><td class="n">${pct(r.open)}</td><td>${Math.abs(r.night) < QUIET ? '' : Math.sign(r.night) === Math.sign(r.open) ? '<span class="green">✓</span>' : '<span style="color:var(--red)">✗</span>'}</td></tr>`).join('')
+    + `</table><p style="color:#55636f">Night = Base price an hour before the open vs the last real trade. Weeks recorded: ${done.length}.</p>`;
+}
+
+renderStatus();
+setInterval(renderStatus, 60000);
+renderTable().catch((e) => { $('rows').innerHTML = `<tr><td colspan="7" class="err">Prices did not load. Try again in a minute.</td></tr>`; console.error(e); });
+renderMonday();
+</script>
+</body>
+</html>
