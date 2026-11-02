@@ -5,6 +5,7 @@
 // One file per Monday in data/checks/, listed in data/checks/index.json.
 import { readFileSync, writeFileSync, existsSync } from 'node:fs';
 import { baseStocks, chart, sleep } from './yahoo.mjs';
+import { stockAddresses, basePrice } from './kyber.mjs';
 
 const TRAP = 5; // % lost on a $1,000 round trip: above this the Base price means nothing
 const mode = process.argv[2];
@@ -15,10 +16,15 @@ const indexFile = 'data/checks/index.json';
 if (mode === 'night') {
   const closes = JSON.parse(readFileSync('data/closes.json', 'utf8')).items;
   const items = {};
+  const addr = await stockAddresses();
+  // Which stocks have a real market comes from Stock Check's round trips (they move slowly);
+  // the price itself is asked of KyberSwap now, so the record never holds a stale one.
   for (const s of await baseStocks()) {
     const c = closes[s.ticker];
-    if (!c || s.base == null || s.loss == null || s.loss >= TRAP) continue;
-    items[s.ticker] = { base: s.base, ref: c.ah ?? c.close };
+    if (!c || !addr[s.symbol] || s.loss == null || s.loss >= TRAP) continue;
+    const base = await basePrice(addr[s.symbol]);
+    if (base == null) { console.log(`${s.ticker}: no quote`); continue; }
+    items[s.ticker] = { base, ref: c.ah ?? c.close };
   }
   writeFileSync(file, JSON.stringify({ date, nightAt: Math.floor(Date.now() / 1000), items }, null, 1) + '\n');
   const index = existsSync(indexFile) ? JSON.parse(readFileSync(indexFile, 'utf8')) : [];
