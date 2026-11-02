@@ -1,5 +1,5 @@
 // Monday check, in two runs.
-//   node scripts/monday.mjs night  — about an hour before the open: Base price of every
+//   node scripts/monday.mjs night  — 50 and 20 minutes before the open: Base price of every
 //                                    stock with a real market, next to Friday's last trade.
 //   node scripts/monday.mjs open   — after the open: how each stock really opened.
 // One file per Monday in data/checks/, listed in data/checks/index.json.

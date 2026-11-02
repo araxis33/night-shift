@@ -288,7 +288,7 @@ async function renderMonday() {
     + `<p>${called.length ? `The night moved ${called.length} stock${called.length > 1 ? 's' : ''} by 0.5% or more. The open went the same way for <b style="color:var(--fg)">${right} of ${called.length}</b>.` : 'The night kept every stock within 0.5% of its last trade.'}</p>`
     + `<table class="mini"><tr><th>STOCK</th><th class="n">NIGHT</th><th class="n">OPEN</th><th></th></tr>`
     + rows.slice(0, 6).map((r) => `<tr><td><b>${r.t}</b></td><td class="n">${pct(r.night)}</td><td class="n">${pct(r.open)}</td><td>${Math.abs(r.night) < QUIET ? '' : Math.sign(r.night) === Math.sign(r.open) ? '<span class="green">✓</span>' : '<span style="color:var(--red)">✗</span>'}</td></tr>`).join('')
-    + `</table><p style="color:#55636f">Night = Base price an hour before the open vs the last real trade. Weeks recorded: ${done.length}.</p>`;
+    + `</table><p style="color:#55636f">Night = Base price about 20 minutes before the open vs the last real trade (after-hours included). Open = the first trade of the day. Weeks recorded: ${done.length}.</p>`;
 }
 
 renderStatus();
