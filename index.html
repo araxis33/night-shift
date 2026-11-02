@@ -146,7 +146,7 @@ td{padding:10px 6px;border-bottom:1px solid var(--line2);white-space:nowrap}
   </div>
 </div>
 <script src="https://deftools.xyz/thesis-core.js"></script>
-<script src="trade.js"></script>
+<script src="trade.js?v=3"></script>
 <script>
 const STOCK_DATA = 'https://deftools-check.araxis67.workers.dev/stock-data';
 const TRAP = 5;      // % lost on a $1,000 round trip: above this the Base price means nothing
@@ -289,8 +289,8 @@ document.addEventListener('click', (e) => {
   if (b && ADDR[b.dataset.sym]) NightTrade.open(ADDR[b.dataset.sym], b.dataset.sym, b.dataset.trade);
 });
 </script>
-<script src="stock.js"></script>
-<script src="basket.js"></script>
+<script src="stock.js?v=3"></script>
+<script src="basket.js?v=3"></script>
 <script>
 // Tabs live in the address: #now, #stock/AMD — so a stock can be linked to.
 let lastStock = null;
