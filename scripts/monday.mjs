@@ -13,6 +13,16 @@ const date = new Date().toISOString().slice(0, 10);
 const file = `data/checks/${date}.json`;
 const indexFile = 'data/checks/index.json';
 
+// Minutes since midnight in New York, and the weekday there. GitHub runs scheduled jobs late,
+// sometimes by hours, so each run checks the clock itself: a "night" record written after the
+// bell would hold daytime prices, and an "open" run before the bell would find no open yet.
+const ny = Object.fromEntries(new Intl.DateTimeFormat('en-US', { timeZone: 'America/New_York', weekday: 'short', hour: '2-digit', minute: '2-digit', hour12: false })
+  .formatToParts(new Date()).map((x) => [x.type, x.value]));
+const nyMin = (+ny.hour % 24) * 60 + +ny.minute;
+const force = process.argv.includes('--force');
+if (!force && mode === 'night' && ny.weekday === 'Mon' && nyMin >= 570) { console.log('night: the market is already open, nothing written'); process.exit(0); }
+if (!force && mode === 'open' && !(ny.weekday === 'Mon' && nyMin >= 575)) { console.log('open: too early, the market has not opened yet'); process.exit(0); }
+
 if (mode === 'night') {
   const closes = JSON.parse(readFileSync('data/closes.json', 'utf8')).items;
   const items = {};

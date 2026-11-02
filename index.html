@@ -37,6 +37,7 @@ td{padding:10px 6px;border-bottom:1px solid var(--line2);white-space:nowrap}
 .green{color:var(--green)}.warn{border-color:#4a2a2a}.warn h3{color:var(--red)}
 .mini{width:100%;font-size:12px;margin-top:8px}.mini td,.mini th{padding:5px 3px}
 .foot{margin-top:16px;font-size:12px;color:#55636f;line-height:1.5}
+.stale{background:#2a1a0c;border:1px solid #5a3a12;color:#f5c97a;border-radius:12px;padding:10px 14px;font-size:14px;margin-top:14px}
 .err{color:var(--red);padding:14px 6px}
 .grid>*{min-width:0}
 .b{font-size:12px;font-weight:700;padding:5px 9px;border-radius:7px;margin-left:4px;border:0;cursor:pointer;font-family:inherit}
@@ -90,6 +91,7 @@ td{padding:10px 6px;border-bottom:1px solid var(--line2);white-space:nowrap}
 </head>
 <body><div class="wrap">
 <div class="top"><a class="logo" href="./"><b>&gt;_</b>Night Shift</a><div class="status" id="status"><i></i>…</div></div>
+<div class="stale" id="stale" hidden></div>
 <nav class="tabs"><a class="tab on" id="tabNow" href="#now">Now</a><a class="tab" id="tabStock" href="#stock">Stock</a><span class="tab off" title="Coming Thursday">Basket <small>Thu</small></span></nav>
 <section id="viewNow">
 <h1>Is it a good price right now?</h1>
@@ -110,7 +112,7 @@ td{padding:10px 6px;border-bottom:1px solid var(--line2);white-space:nowrap}
 </div>
 </section>
 <section id="viewStock" hidden></section>
-<div class="foot" id="foot">Base prices: KyberSwap quotes via <a href="https://deftools.xyz/stocks.html">Stock Check</a>, refreshed every 30 minutes · close and after-hours: Yahoo Finance · round trip = quote to buy $1,000 and sell the same back · not financial advice · part of <a href="https://deftools.xyz">deftools</a></div>
+<div class="foot" id="foot">Base prices: KyberSwap quotes via <a href="https://deftools.xyz/stocks.html">Stock Check</a>, meant to refresh every 30 minutes · close and after-hours: Yahoo Finance · round trip = quote to buy $1,000 and sell the same back · not financial advice · part of <a href="https://deftools.xyz">deftools</a></div>
 </div>
 <div class="tr-back" id="tr-back" hidden>
   <div class="tr" role="dialog" aria-modal="true" aria-labelledby="tr-title">
@@ -135,6 +137,7 @@ td{padding:10px 6px;border-bottom:1px solid var(--line2);white-space:nowrap}
 const STOCK_DATA = 'https://deftools-check.araxis67.workers.dev/stock-data';
 const TRAP = 5;      // % lost on a $1,000 round trip: above this the Base price means nothing
 const QUIET = 0.5;   // gaps smaller than this fold away
+const STALE_MIN = 60; // minutes: older Base prices get a warning at the top
 const NY = 'America/New_York';
 // Coinbase's own contracts, from deftools' list (checked against base.org daily).
 const ADDR = Object.fromEntries(((window.ThesisCore && ThesisCore.TOKENS) || []).map((t) => [t.s, t.a]));
@@ -229,6 +232,12 @@ async function renderTable() {
   }
   const at = new Date(Math.max(...Object.values(sd.items).map((v) => v.dexTs || 0)));
   $('foot').insertAdjacentHTML('afterbegin', `Base prices as of ${utc(at)} · `);
+  // A price that has not refreshed for over an hour is said out loud, not left in the footer.
+  const mins = Math.round((Date.now() - at.getTime()) / 60000);
+  if (mins > STALE_MIN) {
+    $('stale').hidden = false;
+    $('stale').textContent = `Base prices are ${mins < 120 ? mins + ' minutes' : Math.round(mins / 60) + ' hours'} old (last quote ${utcTime(at)}). Gaps below may be out of date until the next refresh.`;
+  }
 }
 
 async function renderMonday() {
