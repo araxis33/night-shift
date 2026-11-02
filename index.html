@@ -66,13 +66,32 @@ td{padding:10px 6px;border-bottom:1px solid var(--line2);white-space:nowrap}
 .tr-cta.sell{background:var(--red);color:#1a0705}.tr-cta:disabled{opacity:.5;cursor:default}
 .tr-link{display:block;text-align:center;border:1px solid var(--line);border-radius:12px;padding:12px;font-size:13px;font-weight:800;color:var(--mut);text-decoration:none}
 .tr-note{font-size:12px;color:var(--dim);line-height:1.5;margin:0}
+.tabs{display:flex;gap:4px;margin:18px 0 4px;border-bottom:1px solid var(--line)}
+.tab{padding:10px 16px;font-size:14px;font-weight:700;color:var(--mut);border-bottom:2px solid transparent;margin-bottom:-1px;text-decoration:none}
+.tab.on{color:var(--fg);border-color:var(--green)}.tab.off{cursor:default;color:var(--dim)}.tab small{font-size:10px;color:var(--dim);margin-left:6px;border:1px solid #33414f;border-radius:5px;padding:1px 5px}
+.tk{text-decoration:none}.tk:hover b{color:var(--green)}
+#viewStock{margin-top:18px}
+.head{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:16px}.head h1{margin:0;font-size:30px}.head .co{color:var(--mut);font-size:14px}
+.head .b{font-size:13px;padding:8px 14px;margin:0}
+.pick{margin-left:auto;background:var(--box);border:1px solid var(--line);color:var(--fg);border-radius:9px;padding:8px 12px;font:inherit;font-size:13px}
+.main{display:flex;flex-direction:column;gap:14px}
+.tonight{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:6px 0 10px}
+.cell{background:var(--bg);border:1px solid var(--line2);border-radius:10px;padding:10px 12px}.cell span{display:block;font-size:11px;color:var(--dim);letter-spacing:.5px;font-weight:600}.cell b{font-size:20px;font-variant-numeric:tabular-nums}
+.kv{display:flex;justify-content:space-between;gap:10px;font-size:14px;padding:5px 0}.kv span{color:var(--mut)}
+.card .bad,.bad{color:var(--red)}.card .green{color:var(--green)}.card .fine{font-size:11px;color:#55636f}
+#weekends table td,#weekends table th{white-space:nowrap}#weekends{overflow-x:auto}
+.go{font-size:13px;color:var(--green);text-decoration:none}
+.nar{display:none}
+.acts{display:inline-flex;gap:6px;white-space:nowrap}
 @media (max-width:900px){.grid{grid-template-columns:1fr}.wrap{padding:18px 14px}h1{font-size:23px}}
-@media (max-width:640px){.wide{display:none}.b{display:block;width:100%;margin:3px 0;padding:6px 10px}td,th{padding-left:4px;padding-right:4px}}
+@media (max-width:640px){.tonight{grid-template-columns:1fr 1fr}.wk-p{display:none}.nar{display:inline}#weekends .dim{color:var(--fg)}.head .b{display:inline-block;width:auto}.pick{margin-left:0;width:100%}.wide{display:none}.b{display:block;width:100%;margin:3px 0;padding:6px 10px}td,th{padding-left:4px;padding-right:4px}}
 </style>
 <script defer src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "d66a3ce27f4e4b47bb1eb31a0e5fa912"}'></script>
 </head>
 <body><div class="wrap">
 <div class="top"><a class="logo" href="./"><b>&gt;_</b>Night Shift</a><div class="status" id="status"><i></i>…</div></div>
+<nav class="tabs"><a class="tab on" id="tabNow" href="#now">Now</a><a class="tab" id="tabStock" href="#stock">Stock</a><span class="tab off" title="Coming Thursday">Basket <small>Thu</small></span></nav>
+<section id="viewNow">
 <h1>Is it a good price right now?</h1>
 <div class="sub">US stocks on Base while Wall Street sleeps. Compared with the last real trade, after-hours included, and what you keep if you buy $1,000 and sell it back.</div>
 <div class="note" id="openNote" hidden>Wall Street is open, so prices on Base track the exchange and the gaps below are mostly noise. The real test is at night and over the weekend.</div>
@@ -89,6 +108,8 @@ td{padding:10px 6px;border-bottom:1px solid var(--line2);white-space:nowrap}
     <div class="card"><h3 style="color:#9aa7b4">Call the open <span class="pill" style="border-color:#33414f;color:#9aa7b4">phase 2</span></h3><p>Higher or lower on Monday? Sign, no money, weekly leaderboard.</p></div>
   </div>
 </div>
+</section>
+<section id="viewStock" hidden></section>
 <div class="foot" id="foot">Base prices: KyberSwap quotes via <a href="https://deftools.xyz/stocks.html">Stock Check</a>, refreshed every 30 minutes · close and after-hours: Yahoo Finance · round trip = quote to buy $1,000 and sell the same back · not financial advice · part of <a href="https://deftools.xyz">deftools</a></div>
 </div>
 <div class="tr-back" id="tr-back" hidden>
@@ -166,9 +187,11 @@ async function getJSON(url) {
   return r.json();
 }
 
-let rowsLoud = '', rowsQuiet = '', quietCount = 0;
+const DATA = Promise.all([getJSON(STOCK_DATA), getJSON('data/closes.json')]);
+DATA.catch(() => {});
+let rowsLoud = '', rowsQuiet = '', quietCount = 0, firstTicker = null;
 async function renderTable() {
-  const [sd, cl] = await Promise.all([getJSON(STOCK_DATA), getJSON('data/closes.json')]);
+  const [sd, cl] = await DATA;
   const live = [], traps = [];
   for (const [symbol, v] of Object.entries(sd.items)) {
     const ticker = symbol.replace(/c$/, '');
@@ -180,9 +203,10 @@ async function renderTable() {
     live.push({ ticker, symbol, base: v.dex, close: c.close, closeAt: c.closeAt, ah: c.ah, gap: (v.dex / ref - 1) * 100, keep: 1000 * (1 - loss / 100) });
   }
   live.sort((a, b) => Math.abs(b.gap) - Math.abs(a.gap));
+  firstTicker = live[0] ? live[0].ticker : null;
   const row = (r) => {
     const [label, col] = verdict(r.gap);
-    return `<tr><td><b>${r.ticker}</b><span class="t">${r.symbol}</span></td><td class="n">${money(r.base)}</td><td class="n dim wide">${money(r.close)}</td><td class="n dim wide">${r.ah != null ? money(r.ah) : '–'}</td>`
+    return `<tr><td><a class="tk" href="#stock/${r.ticker}"><b>${r.ticker}</b><span class="t">${r.symbol}</span></a></td><td class="n">${money(r.base)}</td><td class="n dim wide">${money(r.close)}</td><td class="n dim wide">${r.ah != null ? money(r.ah) : '–'}</td>`
       + `<td class="n" style="color:${col};font-weight:700">${pct(r.gap)}</td><td><span class="pill" style="border-color:${col};color:${col}">${label}</span></td><td class="n wide">${money(r.keep)}</td><td class="n">${ADDR[r.symbol] ? `<button class="b buy" data-trade="buy" data-sym="${r.symbol}">Buy</button><button class="b sell" data-trade="sell" data-sym="${r.symbol}">Sell</button>` : ''}</td></tr>`;
   };
   const loud = live.filter((r) => Math.abs(r.gap) >= QUIET), quiet = live.filter((r) => Math.abs(r.gap) < QUIET);
@@ -234,12 +258,34 @@ async function renderMonday() {
 
 renderStatus();
 setInterval(renderStatus, 60000);
-renderTable().catch((e) => { $('rows').innerHTML = `<tr><td colspan="8" class="err">Prices did not load. Try again in a minute.</td></tr>`; console.error(e); });
+const tableDone = renderTable();
+tableDone.catch((e) => { $('rows').innerHTML = `<tr><td colspan="8" class="err">Prices did not load. Try again in a minute.</td></tr>`; console.error(e); });
 renderMonday();
-$('rows').addEventListener('click', (e) => {
+document.addEventListener('click', (e) => {
   const b = e.target.closest('[data-trade]');
   if (b && ADDR[b.dataset.sym]) NightTrade.open(ADDR[b.dataset.sym], b.dataset.sym, b.dataset.trade);
 });
+</script>
+<script src="stock.js"></script>
+<script>
+// Tabs live in the address: #now, #stock/AMD — so a stock can be linked to.
+let lastStock = null;
+async function route() {
+  const m = location.hash.match(/^#stock(?:\/([A-Za-z]+))?$/);
+  const stock = !!m;
+  $('viewNow').hidden = stock; $('viewStock').hidden = !stock;
+  $('tabNow').classList.toggle('on', !stock); $('tabStock').classList.toggle('on', stock);
+  if (!stock) return;
+  let t = m[1] ? m[1].toUpperCase() : lastStock;
+  if (!t) { try { await DATA; await tableDone; } catch (e) { /* fall through */ } t = firstTicker || 'NVDA'; }
+  if (!m[1]) { history.replaceState(null, '', '#stock/' + t); }
+  lastStock = t;
+  $('tabStock').href = '#stock/' + t;
+  window.scrollTo(0, 0);
+  NightStock.render(t).catch((e) => { $('viewStock').innerHTML = '<p class="err">This stock did not load. Try again in a minute.</p>'; console.error(e); });
+}
+window.addEventListener('hashchange', route);
+route();
 </script>
 </body>
 </html>
