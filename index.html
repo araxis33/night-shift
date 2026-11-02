@@ -39,8 +39,35 @@ td{padding:10px 6px;border-bottom:1px solid var(--line2);white-space:nowrap}
 .foot{margin-top:16px;font-size:12px;color:#55636f;line-height:1.5}
 .err{color:var(--red);padding:14px 6px}
 .grid>*{min-width:0}
+.b{font-size:12px;font-weight:700;padding:5px 9px;border-radius:7px;margin-left:4px;border:0;cursor:pointer;font-family:inherit}
+.b.buy{background:var(--green);color:#04120a}.b.sell{background:#1a2430;color:var(--fg)}.b:hover{filter:brightness(1.15)}
+[hidden]{display:none!important}
+.tr-back{position:fixed;inset:0;z-index:100;padding:16px;background:rgba(2,4,8,.78);display:flex;align-items:center;justify-content:center}
+.tr{width:100%;max-width:400px;max-height:92vh;overflow:auto;background:var(--box);border:1px solid #243140;border-radius:16px;padding:20px;display:flex;flex-direction:column;gap:14px}
+.tr-head{display:flex;align-items:center;gap:12px}.tr-title{font-weight:800;font-size:18px}.tr-sub{font-size:12px;color:var(--dim)}
+.tr-x{margin-left:auto;background:none;border:0;color:var(--dim);font-size:20px;cursor:pointer;padding:8px;margin-right:-8px;line-height:1}.tr-x:hover{color:var(--fg)}
+.tr-tabs{display:flex;gap:4px;padding:4px;background:var(--bg);border:1px solid var(--line);border-radius:999px}
+.tr-tab{flex:1;border:0;background:none;color:var(--mut);cursor:pointer;font:inherit;font-size:13px;font-weight:800;padding:9px 0;border-radius:999px}
+.tr-tab.on{background:var(--green);color:#04120a}.tr-tab.on[data-mode="sell"]{background:var(--red);color:#1a0705}
+.tr-pay{display:flex;align-items:center;gap:6px}.tr-pay-label{font-size:12px;color:var(--dim);font-weight:700;margin-right:2px}
+.tr-pay-opt,.tr-preset{border:1px solid var(--line);background:none;color:var(--mut);font:inherit;font-weight:800;cursor:pointer}
+.tr-pay-opt{border-radius:999px;padding:5px 12px;font-size:12px}
+.tr-presets{display:flex;gap:8px}.tr-preset{flex:1;border-radius:9px;padding:8px 0;font-size:13px}
+.tr-pay-opt.on,.tr-preset.on{background:var(--green);border-color:var(--green);color:#04120a}
+.tr-pay.sell .tr-pay-opt.on,.tr-presets.sell .tr-preset.on{background:var(--red);border-color:var(--red);color:#1a0705}
+.tr-field{display:flex;align-items:center;gap:10px;border:1px solid var(--line);border-radius:12px;padding:12px 14px;background:var(--bg)}
+.tr-field input{flex:1;min-width:0;background:none;border:0;outline:0;color:var(--fg);font:inherit;font-size:18px;font-weight:800}
+.tr-unit{font-size:13px;font-weight:800;color:var(--dim)}
+.tr-bal,.tr-addr{font-size:12px;color:var(--dim);font-weight:600}.tr-bal b{color:var(--fg)}
+.tr-quote{font-size:15px;font-weight:700;min-height:38px}.tr-quote .dim{display:block;font-size:12px;color:var(--dim);font-weight:600;margin-top:4px}
+.tr-fee{font-size:12px;color:var(--green);font-weight:700}
+.tr-status{font-size:13px;color:var(--mut);font-weight:600}.tr-status.good{color:var(--green)}.tr-status.bad{color:var(--red)}
+.tr-cta{background:var(--green);color:#04120a;border:0;border-radius:12px;padding:14px;font:inherit;font-size:15px;font-weight:800;cursor:pointer}
+.tr-cta.sell{background:var(--red);color:#1a0705}.tr-cta:disabled{opacity:.5;cursor:default}
+.tr-link{display:block;text-align:center;border:1px solid var(--line);border-radius:12px;padding:12px;font-size:13px;font-weight:800;color:var(--mut);text-decoration:none}
+.tr-note{font-size:12px;color:var(--dim);line-height:1.5;margin:0}
 @media (max-width:900px){.grid{grid-template-columns:1fr}.wrap{padding:18px 14px}h1{font-size:23px}}
-@media (max-width:640px){.wide{display:none}}
+@media (max-width:640px){.wide{display:none}.b{display:block;width:100%;margin:3px 0;padding:6px 10px}td,th{padding-left:4px;padding-right:4px}}
 </style>
 <script defer src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "d66a3ce27f4e4b47bb1eb31a0e5fa912"}'></script>
 </head>
@@ -51,8 +78,8 @@ td{padding:10px 6px;border-bottom:1px solid var(--line2);white-space:nowrap}
 <div class="note" id="openNote" hidden>Wall Street is open, so prices on Base track the exchange and the gaps below are mostly noise. The real test is at night and over the weekend.</div>
 <div class="grid">
   <div class="box">
-    <table><thead><tr><th>STOCK</th><th class="n">BASE NOW</th><th class="n wide" id="closeHead">LAST CLOSE</th><th class="n wide">AFTER-HOURS</th><th class="n">GAP</th><th>VERDICT</th><th class="n wide">$1,000 ROUND TRIP</th></tr></thead>
-    <tbody id="rows"><tr><td colspan="7" class="dim">Loading prices…</td></tr></tbody></table>
+    <table><thead><tr><th>STOCK</th><th class="n">BASE NOW</th><th class="n wide" id="closeHead">LAST CLOSE</th><th class="n wide">AFTER-HOURS</th><th class="n">GAP</th><th>VERDICT</th><th class="n wide">$1,000 ROUND TRIP</th><th></th></tr></thead>
+    <tbody id="rows"><tr><td colspan="8" class="dim">Loading prices…</td></tr></tbody></table>
     <button class="more" id="more" hidden></button>
   </div>
   <div class="side">
@@ -64,11 +91,32 @@ td{padding:10px 6px;border-bottom:1px solid var(--line2);white-space:nowrap}
 </div>
 <div class="foot" id="foot">Base prices: KyberSwap quotes via <a href="https://deftools.xyz/stocks.html">Stock Check</a>, refreshed every 30 minutes · close and after-hours: Yahoo Finance · round trip = quote to buy $1,000 and sell the same back · not financial advice · part of <a href="https://deftools.xyz">deftools</a></div>
 </div>
+<div class="tr-back" id="tr-back" hidden>
+  <div class="tr" role="dialog" aria-modal="true" aria-labelledby="tr-title">
+    <div class="tr-head"><div><div class="tr-title" id="tr-title">Buy</div><div class="tr-sub" id="tr-sub">on Base</div></div><button class="tr-x" id="tr-close" type="button" aria-label="Close">&#215;</button></div>
+    <div class="tr-tabs" id="tr-tabs" role="group" aria-label="Buy or sell"><button class="tr-tab on" type="button" data-mode="buy">Buy</button><button class="tr-tab" type="button" data-mode="sell">Sell</button></div>
+    <div class="tr-pay" id="tr-pay" role="group" aria-label="Currency"><span class="tr-pay-label" id="tr-pay-label">Pay with</span><button class="tr-pay-opt on" type="button" data-pay="ETH">ETH</button><button class="tr-pay-opt" type="button" data-pay="USDC">USDC</button></div>
+    <div class="tr-presets" id="tr-presets"></div>
+    <div class="tr-field"><input id="tr-amount" type="text" inputmode="decimal" aria-label="Amount"><span class="tr-unit" id="tr-unit">ETH</span></div>
+    <div class="tr-bal" id="tr-bal" hidden></div>
+    <div class="tr-addr" id="tr-addr"></div>
+    <div class="tr-quote" id="tr-quote">Enter an amount.</div>
+    <div class="tr-fee" id="tr-fee"></div>
+    <div class="tr-status" id="tr-status"></div>
+    <button class="tr-cta" id="tr-action" type="button">Connect wallet</button>
+    <a class="tr-link" id="tr-tx" target="_blank" rel="noopener" hidden>View the transaction</a>
+    <p class="tr-note" id="tr-note"></p>
+  </div>
+</div>
+<script src="https://deftools.xyz/thesis-core.js"></script>
+<script src="trade.js"></script>
 <script>
 const STOCK_DATA = 'https://deftools-check.araxis67.workers.dev/stock-data';
 const TRAP = 5;      // % lost on a $1,000 round trip: above this the Base price means nothing
 const QUIET = 0.5;   // gaps smaller than this fold away
 const NY = 'America/New_York';
+// Coinbase's own contracts, from deftools' list (checked against base.org daily).
+const ADDR = Object.fromEntries(((window.ThesisCore && ThesisCore.TOKENS) || []).map((t) => [t.s, t.a]));
 
 const $ = (id) => document.getElementById(id);
 const money = (v) => '$' + v.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
@@ -135,11 +183,11 @@ async function renderTable() {
   const row = (r) => {
     const [label, col] = verdict(r.gap);
     return `<tr><td><b>${r.ticker}</b><span class="t">${r.symbol}</span></td><td class="n">${money(r.base)}</td><td class="n dim wide">${money(r.close)}</td><td class="n dim wide">${r.ah != null ? money(r.ah) : '–'}</td>`
-      + `<td class="n" style="color:${col};font-weight:700">${pct(r.gap)}</td><td><span class="pill" style="border-color:${col};color:${col}">${label}</span></td><td class="n wide">${money(r.keep)}</td></tr>`;
+      + `<td class="n" style="color:${col};font-weight:700">${pct(r.gap)}</td><td><span class="pill" style="border-color:${col};color:${col}">${label}</span></td><td class="n wide">${money(r.keep)}</td><td class="n">${ADDR[r.symbol] ? `<button class="b buy" data-trade="buy" data-sym="${r.symbol}">Buy</button><button class="b sell" data-trade="sell" data-sym="${r.symbol}">Sell</button>` : ''}</td></tr>`;
   };
   const loud = live.filter((r) => Math.abs(r.gap) >= QUIET), quiet = live.filter((r) => Math.abs(r.gap) < QUIET);
   rowsLoud = loud.map(row).join(''); rowsQuiet = quiet.map(row).join(''); quietCount = quiet.length;
-  $('rows').innerHTML = rowsLoud || '<tr><td colspan="7" class="dim">Every stock is within ±0.5% of its last real trade.</td></tr>';
+  $('rows').innerHTML = rowsLoud || '<tr><td colspan="8" class="dim">Every stock is within ±0.5% of its last real trade.</td></tr>';
   const more = $('more');
   more.hidden = !quietCount;
   more.textContent = `+ ${quietCount} more within ±0.5% of after-hours · show`;
@@ -186,8 +234,12 @@ async function renderMonday() {
 
 renderStatus();
 setInterval(renderStatus, 60000);
-renderTable().catch((e) => { $('rows').innerHTML = `<tr><td colspan="7" class="err">Prices did not load. Try again in a minute.</td></tr>`; console.error(e); });
+renderTable().catch((e) => { $('rows').innerHTML = `<tr><td colspan="8" class="err">Prices did not load. Try again in a minute.</td></tr>`; console.error(e); });
 renderMonday();
+$('rows').addEventListener('click', (e) => {
+  const b = e.target.closest('[data-trade]');
+  if (b && ADDR[b.dataset.sym]) NightTrade.open(ADDR[b.dataset.sym], b.dataset.sym, b.dataset.trade);
+});
 </script>
 </body>
 </html>
