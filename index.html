@@ -71,7 +71,20 @@ td{padding:10px 6px;border-bottom:1px solid var(--line2);white-space:nowrap}
 .tab{padding:10px 16px;font-size:14px;font-weight:700;color:var(--mut);border-bottom:2px solid transparent;margin-bottom:-1px;text-decoration:none}
 .tab.on{color:var(--fg);border-color:var(--green)}.tab.off{cursor:default;color:var(--dim)}.tab small{font-size:10px;color:var(--dim);margin-left:6px;border:1px solid #33414f;border-radius:5px;padding:1px 5px}
 .tk{text-decoration:none}.tk:hover b{color:var(--green)}
-#viewStock{margin-top:18px}
+#viewStock,#viewBasket{margin-top:18px}
+#viewBasket h1{margin:0 0 6px}#viewBasket .sub{margin-bottom:16px}
+.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.in{flex:1;min-width:220px;background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:12px 14px;color:var(--fg);font:inherit;font-size:16px}
+.btn{background:var(--green);color:#04120a;border:0;border-radius:10px;padding:12px 18px;font:inherit;font-weight:800;font-size:14px;cursor:pointer}
+.chips{display:flex;gap:6px;flex-wrap:wrap}.chip{font-size:12px;border:1px solid #2a3846;border-radius:20px;padding:3px 10px;color:var(--mut)}.chip.x{color:var(--red);border-color:#4a2a2a;text-decoration:line-through}
+.amtline{margin-left:auto;font-size:13px;color:var(--dim);display:flex;align-items:center;gap:8px}
+.amtbox{background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:8px 10px;color:var(--fg);font-weight:800}.amtbox input{background:none;border:0;outline:0;color:var(--fg);font:inherit;width:80px}
+#bkPay{background:var(--bg);border:1px solid var(--line);color:var(--fg);border-radius:8px;padding:7px 8px;font:inherit;font-size:13px}
+.bar{height:6px;background:#1a2430;border-radius:4px;width:90px;display:inline-block;vertical-align:middle;margin-right:8px}.bar i{display:block;height:100%;background:var(--green);border-radius:4px}
+.big{font-size:30px;font-weight:800;font-variant-numeric:tabular-nums}
+.toggle{display:flex;gap:6px;margin-top:10px}.toggle button{flex:1;font:inherit;font-size:12px;font-weight:700;border:1px solid var(--line);border-radius:8px;padding:8px 4px;color:var(--mut);background:none;cursor:pointer}.toggle button.on{background:var(--green);color:#04120a;border-color:var(--green)}
+.cta{background:var(--green);color:#04120a;border:0;border-radius:12px;padding:14px;font:inherit;font-weight:800;font-size:15px;width:100%;cursor:pointer;margin-top:8px}.cta:disabled{opacity:.5;cursor:default}
+#viewBasket .tr-link{margin-top:8px}
 .head{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:16px}.head h1{margin:0;font-size:30px}.head .co{color:var(--mut);font-size:14px}
 .head .b{font-size:13px;padding:8px 14px;margin:0}
 .pick{margin-left:auto;background:var(--box);border:1px solid var(--line);color:var(--fg);border-radius:9px;padding:8px 12px;font:inherit;font-size:13px}
@@ -85,14 +98,14 @@ td{padding:10px 6px;border-bottom:1px solid var(--line2);white-space:nowrap}
 .nar{display:none}
 .acts{display:inline-flex;gap:6px;white-space:nowrap}
 @media (max-width:900px){.grid{grid-template-columns:1fr}.wrap{padding:18px 14px}h1{font-size:23px}}
-@media (max-width:640px){.tonight{grid-template-columns:1fr 1fr}.wk-p{display:none}.nar{display:inline}#weekends .dim{color:var(--fg)}.head .b{display:inline-block;width:auto}.pick{margin-left:0;width:100%}.wide{display:none}.b{display:block;width:100%;margin:3px 0;padding:6px 10px}td,th{padding-left:4px;padding-right:4px}}
+@media (max-width:640px){.amtline{margin-left:0}.bar{width:32px;margin-right:5px}.vp{display:none}#bkList{overflow-x:auto}.tonight{grid-template-columns:1fr 1fr}.wk-p{display:none}.nar{display:inline}#weekends .dim{color:var(--fg)}.head .b{display:inline-block;width:auto}.pick{margin-left:0;width:100%}.wide{display:none}.b{display:block;width:100%;margin:3px 0;padding:6px 10px}td,th{padding-left:4px;padding-right:4px}}
 </style>
 <script defer src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "d66a3ce27f4e4b47bb1eb31a0e5fa912"}'></script>
 </head>
 <body><div class="wrap">
 <div class="top"><a class="logo" href="./"><b>&gt;_</b>Night Shift</a><div class="status" id="status"><i></i>…</div></div>
 <div class="stale" id="stale" hidden></div>
-<nav class="tabs"><a class="tab on" id="tabNow" href="#now">Now</a><a class="tab" id="tabStock" href="#stock">Stock</a><span class="tab off" title="Coming Thursday">Basket <small>Thu</small></span></nav>
+<nav class="tabs"><a class="tab on" id="tabNow" href="#now">Now</a><a class="tab" id="tabStock" href="#stock">Stock</a><a class="tab" id="tabBasket" href="#basket">Basket</a></nav>
 <section id="viewNow">
 <h1>Is it a good price right now?</h1>
 <div class="sub">US stocks on Base while Wall Street sleeps. Compared with the last real trade, after-hours included, and what you keep if you buy $1,000 and sell it back.</div>
@@ -112,6 +125,7 @@ td{padding:10px 6px;border-bottom:1px solid var(--line2);white-space:nowrap}
 </div>
 </section>
 <section id="viewStock" hidden></section>
+<section id="viewBasket" hidden></section>
 <div class="foot" id="foot">Base prices: KyberSwap quotes via <a href="https://deftools.xyz/stocks.html">Stock Check</a>, meant to refresh every 30 minutes · close and after-hours: Yahoo Finance · round trip = quote to buy $1,000 and sell the same back · not financial advice · part of <a href="https://deftools.xyz">deftools</a></div>
 </div>
 <div class="tr-back" id="tr-back" hidden>
@@ -276,14 +290,16 @@ document.addEventListener('click', (e) => {
 });
 </script>
 <script src="stock.js"></script>
+<script src="basket.js"></script>
 <script>
 // Tabs live in the address: #now, #stock/AMD — so a stock can be linked to.
 let lastStock = null;
 async function route() {
   const m = location.hash.match(/^#stock(?:\/([A-Za-z]+))?$/);
-  const stock = !!m;
-  $('viewNow').hidden = stock; $('viewStock').hidden = !stock;
-  $('tabNow').classList.toggle('on', !stock); $('tabStock').classList.toggle('on', stock);
+  const stock = !!m, basket = location.hash === '#basket';
+  $('viewNow').hidden = stock || basket; $('viewStock').hidden = !stock; $('viewBasket').hidden = !basket;
+  $('tabNow').classList.toggle('on', !stock && !basket); $('tabStock').classList.toggle('on', stock); $('tabBasket').classList.toggle('on', basket);
+  if (basket) { window.scrollTo(0, 0); NightBasket.render(); return; }
   if (!stock) return;
   let t = m[1] ? m[1].toUpperCase() : lastStock;
   if (!t) { try { await DATA; await tableDone; } catch (e) { /* fall through */ } t = firstTicker || 'NVDA'; }

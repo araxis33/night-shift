@@ -135,5 +135,5 @@
       + '<p class="fine">Base before open = the last price logged before the bell, counted only if a $1,000 round trip cost under 2% right then; US after open = about 10 minutes in. From Stock Check\'s price log, every ~4 hours over the weekend.</p>';
   }
 
-  window.NightStock = { render };
+  window.NightStock = { render, loadWeekends, weekendRow };
 })();
