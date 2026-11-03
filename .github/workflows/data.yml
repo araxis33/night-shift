@@ -4,14 +4,9 @@ name: data
 #          the regular close and the last after-hours trade for each stock.
 # night:   Monday before the open (the Worker starts it at 8:40 and 9:10 New York time): what Base priced over the weekend.
 # open:    Monday, after the open: how each stock really opened.
-# Times are UTC and follow New York winter time (open 14:30 UTC); both runs of
-# each pair are listed so summer time (open 13:30 UTC) is covered too.
+# The Cloudflare Worker (base-tools check-worker/clock.js) starts each job on time
+# with workflow_dispatch; GitHub's own schedule ran hours late or not at all.
 on:
-  schedule:
-    - cron: "20 1 * * 2-6"   # closes (winter)
-    - cron: "20 0 * * 2-6"   # closes (summer)
-    - cron: "25 13 * * 1"    # night (winter; summer this lands just before 13:30)
-    - cron: "5 15 * * 1"     # open (winter)
   workflow_dispatch:
     inputs:
       job:
