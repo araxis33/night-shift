@@ -111,13 +111,36 @@ td{padding:10px 6px;border-bottom:1px solid var(--line2);white-space:nowrap}
 .acts{display:inline-flex;gap:6px;white-space:nowrap}
 @media (max-width:900px){.grid{grid-template-columns:1fr}.wrap{padding:18px 14px}h1{font-size:23px}}
 @media (max-width:640px){.amtline{margin-left:0}.bar{width:32px;margin-right:5px}.vp{display:none}#bkList{overflow-x:auto}.tonight{grid-template-columns:1fr 1fr}.wk-p{display:none}.nar{display:inline}#weekends .dim{color:var(--fg)}.head .b{display:inline-block;width:auto}.pick{margin-left:0;width:100%}.wide{display:none}.b{display:block;width:100%;margin:3px 0;padding:6px 10px}td,th{padding-left:4px;padding-right:4px}}
+.gm-new{background:var(--amber);color:#1a1200!important;border:0!important;font-weight:800}
+.gm-teaser{display:block;text-decoration:none}.gm-teaser:hover{border-color:#2b4a39}
+.up{color:var(--green)}.dn{color:var(--red)}
+.gm-lock{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;font-size:13px;color:var(--mut);padding:10px 4px 12px;border-bottom:1px solid var(--line)}.gm-lock b{color:var(--amber)}
+.gm-row{display:grid;grid-template-columns:120px 1fr auto;align-items:center;gap:10px;padding:12px 4px;border-bottom:1px solid var(--line2)}
+.gm-tk{font-weight:800;font-size:16px}.gm-tk span{display:block;font-size:11px;color:var(--dim);font-weight:500}
+.gm-night{font-size:13px;color:var(--mut)}
+.gm-pick{display:flex;gap:8px}
+.gm-p{width:104px;padding:9px 0;border-radius:9px;border:1px solid var(--line);background:none;color:var(--mut);font:inherit;font-weight:800;font-size:14px;cursor:pointer}
+.gm-p:hover{color:var(--fg);border-color:#33414f}.gm-p.hi.on{background:var(--green);border-color:var(--green);color:#04120a}.gm-p.lo.on{background:var(--red);border-color:var(--red);color:#1a0705}
+.gm-done{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;padding:14px 4px 4px;font-size:13px;color:var(--mut)}
+.gm-cta{background:var(--green);color:#04120a;border:0;border-radius:11px;padding:11px 18px;font:inherit;font-weight:800;font-size:14px;cursor:pointer}.gm-cta:disabled{opacity:.45;cursor:default}
+.gm-msg{font-size:13px;color:var(--amber);padding:8px 4px 0}
+.gm-how{font-size:12px;color:#55636f;padding:12px 4px 4px;line-height:1.45}
+.gm-empty{padding:18px 6px}.gm-empty h3{margin:0 0 8px}.gm-empty p{color:var(--mut);font-size:14px;line-height:1.5;margin:0}
+.gm-score{font-size:16px;padding:14px 4px;line-height:1.5}.gm-share{display:inline-block;margin-left:8px;border:1px solid var(--line);border-radius:9px;padding:6px 11px;font-weight:800;font-size:13px;text-decoration:none}
+.gm-res td,.gm-res th{padding:9px 6px}
+.gm-seg{display:flex;gap:4px;margin-bottom:8px}.gm-seg button{font:inherit;font-size:12px;padding:4px 10px;border-radius:999px;border:1px solid var(--line);background:none;color:var(--mut);cursor:pointer}.gm-seg button.on{background:#1a2430;color:var(--fg)}
+.gm-board{width:100%;font-size:13px}.gm-board td{padding:7px 3px;border-bottom:1px solid var(--line2);white-space:normal}.gm-board td.n{text-align:right}
+.gm-board tr.night td{color:var(--amber)}.gm-board tr.me td{color:var(--green);font-weight:700}
+.gm-join{margin-top:12px;border:1px dashed #2b3a4a;border-radius:11px;padding:11px;font-size:12px;color:var(--mut);line-height:1.45}.gm-join b{display:block;color:var(--fg);font-size:13px;margin-bottom:3px}
+.gm-big{font-size:26px;font-weight:800}
+@media (max-width:640px){.gm-row{grid-template-columns:1fr auto}.gm-row .gm-night{grid-column:1/-1;grid-row:2}.gm-p{width:84px}.tabs{overflow-x:auto}.tab{white-space:nowrap;padding:10px 11px}}
 </style>
 <script defer src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "d66a3ce27f4e4b47bb1eb31a0e5fa912"}'></script>
 </head>
 <body><div class="wrap">
 <div class="top"><a class="logo" href="./"><b>&gt;_</b>Night Shift</a><div class="status" id="status"><i></i>…</div></div>
 <div class="stale" id="stale" hidden></div>
-<nav class="tabs"><a class="tab on" id="tabNow" href="#now">Now</a><a class="tab" id="tabStock" href="#stock">Stock</a><a class="tab" id="tabBasket" href="#basket">Basket</a></nav>
+<nav class="tabs"><a class="tab on" id="tabNow" href="#now">Now</a><a class="tab" id="tabStock" href="#stock">Stock</a><a class="tab" id="tabBasket" href="#basket">Basket</a><a class="tab" id="tabGame" href="#game">Beat the night<small class="gm-new">NEW</small></a></nav>
 <section id="viewNow">
 <h1>Is it a good price right now?</h1>
 <div class="sub">US stocks on Base while Wall Street sleeps. Compared with the last real trade, after-hours included, and what you keep if you buy $1,000 and sell it back.</div>
@@ -132,12 +155,20 @@ td{padding:10px 6px;border-bottom:1px solid var(--line2);white-space:nowrap}
     <div class="card" id="monday"><h3 class="green">Monday check</h3><p>Every weekend: what the night priced in, next to how each stock really opened. The record builds up, week after week.</p><p style="color:#55636f" id="mondayNext"></p></div>
     <div class="card warn" id="trapCard" hidden><h3 id="trapTitle"></h3><p id="trapText"></p></div>
     <div class="card"><h3>During market hours</h3><p>Prices on Base track the exchange. The page says so, and the Monday check shows how the last weekend went.</p></div>
-    <div class="card"><h3 style="color:#9aa7b4">Call the open <span class="pill" style="border-color:#33414f;color:#9aa7b4">phase 2</span></h3><p>Higher or lower on Monday? Sign, no money, weekly leaderboard.</p></div>
+    <a class="card gm-teaser" href="#game"><h3 class="green">Beat the night →</h3><p>Higher or lower at Monday's open? Five stocks, one tap each, free. The night on Base plays too. Weekly leaderboard.</p></a>
   </div>
 </div>
 </section>
 <section id="viewStock" hidden></section>
 <section id="viewBasket" hidden></section>
+<section id="viewGame" hidden>
+<h1>Can you beat the night?</h1>
+<div class="sub">The price on Base moves all weekend. On 2 Nov it called the open right for 18 of 20 stocks.<br>Pick higher or lower for 5 stocks before Monday's open. One tap each, free, no wallet needed to play.</div>
+<div class="grid">
+  <div class="box" id="gmMain"><p class="dim" style="padding:10px 4px">Loading…</p></div>
+  <div class="side"><div class="card" id="gmBoard"><h3>Leaderboard</h3></div><div class="card" id="gmLast" hidden></div></div>
+</div>
+</section>
 <div class="foot" id="foot">Base prices: KyberSwap quotes via <a href="https://deftools.xyz/stocks.html">Stock Check</a>, meant to refresh every 30 minutes · close and after-hours: Yahoo Finance · round trip = quote to buy $1,000 and sell the same back · not financial advice · part of <a href="https://deftools.xyz">deftools</a></div>
 </div>
 <div class="tr-back" id="tr-back" hidden>
@@ -303,15 +334,17 @@ document.addEventListener('click', (e) => {
 </script>
 <script src="stock.js?v=3"></script>
 <script src="basket.js?v=3"></script>
+<script src="game.js?v=1"></script>
 <script>
 // Tabs live in the address: #now, #stock/AMD — so a stock can be linked to.
 let lastStock = null;
 async function route() {
   const m = location.hash.match(/^#stock(?:\/([A-Za-z]+))?$/);
-  const stock = !!m, basket = location.hash === '#basket';
-  $('viewNow').hidden = stock || basket; $('viewStock').hidden = !stock; $('viewBasket').hidden = !basket;
-  $('tabNow').classList.toggle('on', !stock && !basket); $('tabStock').classList.toggle('on', stock); $('tabBasket').classList.toggle('on', basket);
+  const stock = !!m, basket = location.hash === '#basket', game = location.hash === '#game';
+  $('viewNow').hidden = stock || basket || game; $('viewStock').hidden = !stock; $('viewBasket').hidden = !basket; $('viewGame').hidden = !game;
+  $('tabNow').classList.toggle('on', !stock && !basket && !game); $('tabStock').classList.toggle('on', stock); $('tabBasket').classList.toggle('on', basket); $('tabGame').classList.toggle('on', game);
   if (basket) { window.scrollTo(0, 0); NightBasket.render(); return; }
+  if (game) { window.scrollTo(0, 0); NightGame.render().catch((e) => { $('gmMain').innerHTML = '<p class="err">The game did not load. Try again in a minute.</p>'; console.error(e); }); return; }
   if (!stock) return;
   let t = m[1] ? m[1].toUpperCase() : lastStock;
   if (!t) { try { await DATA; await tableDone; } catch (e) { /* fall through */ } t = firstTicker || 'NVDA'; }
