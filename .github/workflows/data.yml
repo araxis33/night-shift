@@ -4,6 +4,7 @@ name: data
 #          the regular close and the last after-hours trade for each stock.
 # night:   Monday before the open (the Worker starts it at 8:40 and 9:10 New York time): what Base priced over the weekend.
 # open:    Monday, after the open: how each stock really opened.
+# game:    with Friday's closes run, opens next Monday's "Beat the night" round (scripts/game.mjs).
 # The Cloudflare Worker (base-tools check-worker/clock.js) starts each job on time
 # with workflow_dispatch; GitHub's own schedule ran hours late or not at all.
 on:
@@ -39,7 +40,7 @@ jobs:
           esac
       - run: |
           case "${{ steps.pick.outputs.job }}" in
-            closes) node scripts/closes.mjs ;;
+            closes) node scripts/closes.mjs && (node scripts/game.mjs || echo "game: round not opened") ;;
             night) node scripts/monday.mjs night ;;
             open) node scripts/monday.mjs open ;;
           esac
