@@ -61,16 +61,16 @@
 
   async function render(ticker) {
     const view = $('viewStock');
-    const [sd, cl] = await DATA;
+    const [sd, cl, shares] = await DATA;
     const sym = ticker + 'c';
     const st = sd.items[sym], c = cl.items[ticker], addr = ADDR[sym];
     if (!st || !addr) { view.innerHTML = `<p class="err">No stock called ${esc(ticker)} here. <a href="#now">Back to the list</a></p>`; return; }
 
     const open = marketOpen();
     const trap = st.rt && st.rt.loss >= TRAP;
-    const ref = c ? (c.ah ?? c.close) : null;
+    const ref = refPrice(ticker, c, shares);
     const gap = st.dex != null && ref ? (st.dex / ref - 1) * 100 : null;
-    const [label, col] = gap == null || trap ? ['no real market', 'var(--red)'] : verdict(gap);
+    const [label, col] = trap ? ['no real market', 'var(--red)'] : gap == null ? ['–', '#7d8a97'] : verdict(gap);
     const n = nextOpen();
 
     const options = TOKENS.filter((t) => sd.items[t.s] && sd.items[t.s].dex != null)
@@ -83,10 +83,10 @@
     } else {
       tonight = `<div class="tonight">
         <div class="cell"><span>${c ? nyParts(new Date(c.closeAt * 1000)).wd.toUpperCase() + ' CLOSE' : 'LAST CLOSE'}</span><b>${c ? money(c.close) : '–'}</b></div>
-        <div class="cell"><span>AFTER-HOURS</span><b>${c && c.ah != null ? money(c.ah) : '–'}</b></div>
+        <div class="cell"><span>${open ? 'REAL SHARE' : 'AFTER-HOURS'}</span><b>${open ? (ref != null ? money(ref) : '–') : c && c.ah != null ? money(c.ah) : '–'}</b></div>
         <div class="cell"><span>BASE NOW</span><b>${money(st.dex)}</b></div>
-        <div class="cell"><span>GAP TO LAST TRADE</span><b style="color:${col}">${gap == null ? '–' : pct(gap)}</b></div></div>
-        <p>${open ? 'Wall Street is open, so the price on Base tracks the exchange and this gap is mostly noise.'
+        <div class="cell"><span>${open ? 'GAP TO REAL SHARE' : 'GAP TO LAST TRADE'}</span><b style="color:${col}">${gap == null ? '–' : pct(gap)}</b></div></div>
+        <p>${open ? (gap == null ? 'Wall Street is open. The live share did not load, so there is no gap to show.' : `Wall Street is open: on Base, ${ticker} sits ${Math.abs(gap) < 0.05 ? 'right at' : Math.abs(gap).toFixed(1) + '% ' + (gap > 0 ? 'above' : 'below')} the live share.`)
           : gap == null ? '' : Math.abs(gap) < QUIET ? `On Base, ${ticker} sits right at its last real trade.`
           : `On Base, ${ticker} costs ${Math.abs(gap).toFixed(1)}% ${gap > 0 ? 'more' : 'less'} than its last real trade. Wall Street opens ${n ? utcTime(n) : 'next weekday'} — then we see who was right.`}</p>`;
     }
