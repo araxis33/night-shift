@@ -113,7 +113,9 @@
     s.innerHTML = html;
   }
 
+  const ev = (n) => { try { navigator.sendBeacon("https://deftools-check.araxis67.workers.dev/ev", n); } catch (e) { /* a counter never gets in the way */ } };
   function open(token, symbol, mode) {
+    ev("night_trade");
     trade.token = token; trade.symbol = symbol;
     el("tr-fee").textContent = "Fee " + (FEE_BPS / 100).toFixed(1) + "% to this site, already counted in the number above.";
     el("tr-addr").innerHTML = 'Coinbase contract <a href="' + SCAN + "/token/" + esc(token) + '" target="_blank" rel="noopener">' + esc(shortAddr(token)) + "</a>";
@@ -378,6 +380,7 @@
       tx.textContent = hash ? "View the transaction" : "See it on the explorer";
       tx.hidden = false;
       trade.done = hash || "onchain";
+      ev("night_tx");
       status(sell ? "Sold. The " + pa.sym + " is in your wallet." : esc(trade.symbol) + " is in your wallet.", false, true);
       if (spendsBalance()) refreshBalance();
     } catch (e) {
