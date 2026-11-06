@@ -26,7 +26,7 @@
   const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
   const hex32 = (n) => BigInt(n).toString(16).padStart(64, '0');
 
-  const st = { text: 'ai chips and cloud, no tesla', amount: 1000, pay: 'USDC', mode: 'all', parsed: null, sd: null, cl: null };
+  const st = { text: 'ai chips and cloud, no tesla', amount: 1000, pay: 'USDC', mode: 'all', parsed: null, sd: null, cl: null, live: {} };
   let ex = { state: 'idle', account: null, quotes: null, msg: '', link: '', error: null, busy: false };
 
   // ---------------------------------------------------------------- the basket
@@ -37,7 +37,7 @@
       const v = st.sd.items[s], t = BY_S[s], c = st.cl.items[s.replace(/c$/, '')];
       if (!v || !t || w <= 0) continue;
       if (v.dex == null || !v.rt || v.rt.loss >= TRAP) { left.push({ s, loss: v.rt ? v.rt.loss : null }); continue; }
-      const ref = c ? (c.ah ?? c.close) : null;
+      const ref = refPrice(s.replace(/c$/, ''), c, st.live);
       rows.push({ s, t, w, dex: v.dex, ref, gap: ref ? (v.dex / ref - 1) * 100 : null, rt: v.rt.loss });
     }
     return { rows, left };
@@ -78,7 +78,7 @@
       $('bkText').onkeydown = (e) => { if (e.key === 'Enter') build(); };
       $('bkAmt').oninput = () => { const n = Number($('bkAmt').value.replace(/[^0-9.]/g, '')); if (n > 0) { st.amount = n; resetBuy(); draw(); } };
       $('bkPay').onchange = () => { st.pay = $('bkPay').value; resetBuy(); draw(); };
-      DATA.then(([sd, cl]) => { st.sd = sd; st.cl = cl; build(); }).catch(() => { $('bkList').innerHTML = '<p class="bad">Prices did not load. Try again in a minute.</p>'; });
+      DATA.then(([sd, cl, live]) => { st.sd = sd; st.cl = cl; st.live = live; build(); }).catch(() => { $('bkList').innerHTML = '<p class="bad">Prices did not load. Try again in a minute.</p>'; });
     }
   }
 
@@ -124,13 +124,13 @@
     const over = kept.filter((r) => r.gap != null && Math.round(r.gap * 10) / 10 >= PRICEY), under = kept.filter((r) => r.gap != null && Math.round(r.gap * 10) / 10 <= -PRICEY);
     const names = (a) => a.map((r) => `${r.s.replace(/c$/, '')} (${pct(r.gap)})`).join(', ');
     let why = '';
-    if (over.length && under.length) why = `Paying over on ${names(over)} is ${Math.abs(prem) < QUIET ? 'cancelled out' : 'partly offset'} by buying ${names(under)} under their last trade.`;
+    if (over.length && under.length) why = `Paying over on ${names(over)} is ${Math.abs(prem) < QUIET ? 'cancelled out' : 'partly offset'} by buying ${names(under)} under ${marketOpen() ? 'the live share' : 'their last trade'}.`;
     else if (over.length) why = `Most of it is ${names(over)}.`;
-    else if (under.length) why = `${names(under)} ${under.length > 1 ? 'cost' : 'costs'} less than at the last trade.`;
-    else why = 'Every stock in it sits within 2% of its last trade.';
-    $('bkPrem').innerHTML = `<h3>Tonight's premium</h3><div class="big" style="color:${prem >= PRICEY ? 'var(--amber)' : prem <= -PRICEY ? 'var(--green)' : 'var(--fg)'}">${prem == null ? '–' : (prem > 0 ? '+' : prem < 0 ? '−' : '') + Math.abs(prem).toFixed(2) + '%'}</div>
-      <p>Your ${money(spent).replace(/\.00$/, '')} buys stock worth <b style="color:var(--fg)">${money(atRef)}</b> at the last real trades. ${why}</p>
-      ${marketOpen() ? '<p>Wall Street is open, so these gaps are mostly noise right now.</p>' : ''}
+    else if (under.length) why = `${names(under)} ${under.length > 1 ? 'cost' : 'costs'} less than ${marketOpen() ? 'the live share' : 'at the last trade'}.`;
+    else why = `Every stock in it sits within 2% of ${marketOpen() ? 'the live share' : 'its last trade'}.`;
+    $('bkPrem').innerHTML = `<h3>${marketOpen() ? 'Premium right now' : "Tonight's premium"}</h3><div class="big" style="color:${prem >= PRICEY ? 'var(--amber)' : prem <= -PRICEY ? 'var(--green)' : 'var(--fg)'}">${prem == null ? '–' : (prem > 0 ? '+' : prem < 0 ? '−' : '') + Math.abs(prem).toFixed(2) + '%'}</div>
+      <p>Your ${money(spent).replace(/\.00$/, '')} buys stock worth <b style="color:var(--fg)">${money(atRef)}</b> at ${marketOpen() ? 'live share prices' : 'the last real trades'}. ${why}</p>
+      ${marketOpen() ? '<p>Wall Street is open, so these gaps are against the live share.</p>' : ''}
       <div class="toggle">${[['all', 'Keep all'], ['skip', 'Skip pricey'], ['fair', 'Only fair']].map(([m, l]) => `<button type="button" data-mode="${m}" class="${st.mode === m ? 'on' : ''}">${l}</button>`).join('')}</div>`;
     $('bkPrem').querySelectorAll('[data-mode]').forEach((b) => { b.onclick = () => { st.mode = b.dataset.mode; resetBuy(); draw(); }; });
 

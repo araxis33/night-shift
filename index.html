@@ -144,10 +144,10 @@ td{padding:10px 6px;border-bottom:1px solid var(--line2);white-space:nowrap}
 <section id="viewNow">
 <h1>Is it a good price right now?</h1>
 <div class="sub">US stocks on Base while Wall Street sleeps. Compared with the last real trade, after-hours included, and what you keep if you buy $1,000 and sell it back.</div>
-<div class="note" id="openNote" hidden>Wall Street is open, so prices on Base track the exchange and the gaps below are mostly noise. The real test is at night and over the weekend.</div>
+<div class="note" id="openNote" hidden>Wall Street is open, so each gap below is against the live share. The real test is at night and over the weekend.</div>
 <div class="grid">
   <div class="box">
-    <table><thead><tr><th>STOCK</th><th class="n">BASE NOW</th><th class="n wide" id="closeHead">LAST CLOSE</th><th class="n wide">AFTER-HOURS</th><th class="n">GAP</th><th>VERDICT</th><th class="n wide">$1,000 ROUND TRIP</th><th></th></tr></thead>
+    <table><thead><tr><th>STOCK</th><th class="n">BASE NOW</th><th class="n wide" id="closeHead">LAST CLOSE</th><th class="n wide" id="refHead">AFTER-HOURS</th><th class="n">GAP</th><th>VERDICT</th><th class="n wide">$1,000 ROUND TRIP</th><th></th></tr></thead>
     <tbody id="rows"><tr><td colspan="8" class="dim">Loading prices…</td></tr></tbody></table>
     <button class="more" id="more" hidden></button>
   </div>
@@ -193,6 +193,7 @@ td{padding:10px 6px;border-bottom:1px solid var(--line2);white-space:nowrap}
 <script src="trade.js?v=4"></script>
 <script>
 const STOCK_DATA = 'https://deftools-check.araxis67.workers.dev/stock-data';
+const SHARES = 'https://deftools-check.araxis67.workers.dev/shares?t=';
 const TRAP = 5;      // % lost on a $1,000 round trip: above this the Base price means nothing
 const QUIET = 0.5;   // gaps smaller than this fold away
 const STALE_MIN = 60; // minutes: older Base prices get a warning at the top
@@ -248,11 +249,25 @@ async function getJSON(url) {
   return r.json();
 }
 
-const DATA = Promise.all([getJSON(STOCK_DATA), getJSON('data/closes.json')]);
+// While Wall Street trades, the price to compare with is the live share: yesterday's
+// close would call a stock "pricey" for simply having risen today. No live price, no verdict.
+async function liveShares(sd) {
+  if (!marketOpen()) return {};
+  const tickers = Object.keys(sd.items).map((s) => s.replace(/c$/, '')), parts = [];
+  for (let i = 0; i < tickers.length; i += 12) parts.push(tickers.slice(i, i + 12)); // the Worker's limit per call
+  const got = await Promise.all(parts.map((t) => getJSON(SHARES + t.join(',')).catch(() => ({}))));
+  return Object.assign({}, ...got);
+}
+const refPrice = (ticker, c, live) => (marketOpen() ? live[ticker]?.price ?? null : c ? c.ah ?? c.close : null);
+
+const DATA = Promise.all([getJSON(STOCK_DATA), getJSON('data/closes.json')])
+  .then(async ([sd, cl]) => [sd, cl, await liveShares(sd)]);
 DATA.catch(() => {});
 let rowsLoud = '', rowsQuiet = '', quietCount = 0, firstTicker = null;
 async function renderTable() {
-  const [sd, cl] = await DATA;
+  const [sd, cl, shares] = await DATA;
+  const open = marketOpen();
+  if (open) $('refHead').textContent = 'REAL SHARE';
   const live = [], traps = [];
   for (const [symbol, v] of Object.entries(sd.items)) {
     const ticker = symbol.replace(/c$/, '');
@@ -260,22 +275,24 @@ async function renderTable() {
     const loss = v.rt?.loss;
     if (v.dex == null || loss == null || !c) continue;
     if (loss >= TRAP) { traps.push({ ticker, loss }); continue; }
-    const ref = c.ah ?? c.close;
-    live.push({ ticker, symbol, base: v.dex, close: c.close, closeAt: c.closeAt, ah: c.ah, gap: (v.dex / ref - 1) * 100, keep: 1000 * (1 - loss / 100) });
+    const ref = refPrice(ticker, c, shares);
+    live.push({ ticker, symbol, base: v.dex, close: c.close, closeAt: c.closeAt, ref, gap: ref ? (v.dex / ref - 1) * 100 : null, keep: 1000 * (1 - loss / 100) });
   }
-  live.sort((a, b) => Math.abs(b.gap) - Math.abs(a.gap));
+  live.sort((a, b) => Math.abs(b.gap ?? 0) - Math.abs(a.gap ?? 0));
   firstTicker = live[0] ? live[0].ticker : null;
   const row = (r) => {
-    const [label, col] = verdict(r.gap);
-    return `<tr><td><a class="tk" href="#stock/${r.ticker}"><b>${r.ticker}</b><span class="t">${r.symbol}</span></a></td><td class="n">${money(r.base)}</td><td class="n dim wide">${money(r.close)}</td><td class="n dim wide">${r.ah != null ? money(r.ah) : '–'}</td>`
-      + `<td class="n" style="color:${col};font-weight:700">${pct(r.gap)}</td><td><span class="pill" style="border-color:${col};color:${col}">${label}</span></td><td class="n wide">${money(r.keep)}</td><td class="n">${ADDR[r.symbol] ? `<button class="b buy" data-trade="buy" data-sym="${r.symbol}">Buy</button><button class="b sell" data-trade="sell" data-sym="${r.symbol}">Sell</button>` : ''}</td></tr>`;
+    const [label, col] = r.gap == null ? ['–', '#7d8a97'] : verdict(r.gap);
+    return `<tr><td><a class="tk" href="#stock/${r.ticker}"><b>${r.ticker}</b><span class="t">${r.symbol}</span></a></td><td class="n">${money(r.base)}</td><td class="n dim wide">${money(r.close)}</td><td class="n dim wide">${r.ref != null ? money(r.ref) : '–'}</td>`
+      + `<td class="n" style="color:${col};font-weight:700">${r.gap == null ? '–' : pct(r.gap)}</td><td><span class="pill" style="border-color:${col};color:${col}">${label}</span></td><td class="n wide">${money(r.keep)}</td><td class="n">${ADDR[r.symbol] ? `<button class="b buy" data-trade="buy" data-sym="${r.symbol}">Buy</button><button class="b sell" data-trade="sell" data-sym="${r.symbol}">Sell</button>` : ''}</td></tr>`;
   };
-  const loud = live.filter((r) => Math.abs(r.gap) >= QUIET), quiet = live.filter((r) => Math.abs(r.gap) < QUIET);
+  const loud = live.filter((r) => Math.abs(r.gap ?? 0) >= QUIET), quiet = live.filter((r) => Math.abs(r.gap ?? 0) < QUIET);
   rowsLoud = loud.map(row).join(''); rowsQuiet = quiet.map(row).join(''); quietCount = quiet.length;
-  $('rows').innerHTML = rowsLoud || '<tr><td colspan="8" class="dim">Every stock is within ±0.5% of its last real trade.</td></tr>';
+  // By day nearly every gap is small: list them all rather than leave a near-empty table.
+  if (open) { rowsLoud += rowsQuiet; rowsQuiet = ''; quietCount = 0; }
+  $('rows').innerHTML = rowsLoud || `<tr><td colspan="8" class="dim">Every stock is within ±0.5% of ${open ? 'the live share' : 'its last real trade'}.</td></tr>`;
   const more = $('more');
   more.hidden = !quietCount;
-  more.textContent = `+ ${quietCount} more within ±0.5% of after-hours · show`;
+  more.textContent = `+ ${quietCount} more within ±0.5% of ${open ? 'the live share' : 'after-hours'} · show`;
   more.onclick = () => { $('rows').innerHTML = rowsLoud + rowsQuiet; more.hidden = true; };
 
   const lastClose = live[0] && new Date(live[0].closeAt * 1000);
@@ -333,8 +350,8 @@ document.addEventListener('click', (e) => {
   if (b && ADDR[b.dataset.sym]) NightTrade.open(ADDR[b.dataset.sym], b.dataset.sym, b.dataset.trade);
 });
 </script>
-<script src="stock.js?v=3"></script>
-<script src="basket.js?v=3"></script>
+<script src="stock.js?v=4"></script>
+<script src="basket.js?v=4"></script>
 <script src="game.js?v=1"></script>
 <script>
 // Tabs live in the address: #now, #stock/AMD — so a stock can be linked to.
