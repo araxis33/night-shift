@@ -1,0 +1,42 @@
+{
+ "date": "2026-11-09",
+ "lockAt": 1794234300,
+ "at": 1794014479,
+ "stocks": [
+  {
+   "ticker": "NVDA",
+   "name": "NVIDIA",
+   "close": 186.64,
+   "ah": 188.7001,
+   "ref": 188.7001
+  },
+  {
+   "ticker": "MRNA",
+   "name": "Moderna",
+   "close": 254.19,
+   "ah": 256.9167,
+   "ref": 256.9167
+  },
+  {
+   "ticker": "SPCX",
+   "name": "SpaceX",
+   "close": 134.27,
+   "ah": 135.64,
+   "ref": 135.64
+  },
+  {
+   "ticker": "SNDK",
+   "name": "SanDisk",
+   "close": 835.06,
+   "ah": 841.46,
+   "ref": 841.46
+  },
+  {
+   "ticker": "BE",
+   "name": "Bloom Energy",
+   "close": 173.24,
+   "ah": 174.56,
+   "ref": 174.56
+  }
+ ]
+}
