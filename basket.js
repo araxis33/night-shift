@@ -234,6 +234,10 @@
 
   async function doQuote(kept) {
     if (ex.busy) return;
+    // US gate (deftools.xyz/us-gate.js), before anything touches a wallet.
+    if (typeof window.usGate !== 'function') { ex.error = 'Trading is unavailable right now. Reload the page and try again.'; draw(); return; }
+    try { await window.usGate(); }
+    catch (e) { ex.error = e.message || String(e); draw(); return; }
     ex.busy = true; ex.error = null; ex.msg = '';
     try {
       const from = await connect();

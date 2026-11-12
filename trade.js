@@ -339,6 +339,12 @@
   async function doTrade() {
     if (trade.busy) return;
     if (trade.done) { close(); return; }
+    // US gate (deftools.xyz/us-gate.js): every trade here is a stock trade.
+    if (!trade.usOk) {
+      if (typeof window.usGate !== "function") { status("Trading is unavailable right now. Reload the page and try again.", true); return; }
+      try { await window.usGate(); trade.usOk = true; }
+      catch (e) { status(esc(e.message || String(e)), true); return; }
+    }
     if (!trade.account) {
       trade.busy = true; renderCta();
       try { await connectWallet(); } catch (e) { status(esc(e.message || "The wallet refused the connection."), true); }
