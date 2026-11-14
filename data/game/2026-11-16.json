@@ -1,0 +1,42 @@
+{
+ "date": "2026-11-16",
+ "lockAt": 1794839100,
+ "at": 1794619282,
+ "stocks": [
+  {
+   "ticker": "MRVL",
+   "name": "Marvell",
+   "close": 156.76,
+   "ah": 152.5883,
+   "ref": 152.5883
+  },
+  {
+   "ticker": "BE",
+   "name": "Bloom Energy",
+   "close": 191.99,
+   "ah": 186.979,
+   "ref": 186.979
+  },
+  {
+   "ticker": "AMD",
+   "name": "AMD",
+   "close": 534.06,
+   "ah": 521.2,
+   "ref": 521.2
+  },
+  {
+   "ticker": "MRNA",
+   "name": "Moderna",
+   "close": 223.37,
+   "ah": 218,
+   "ref": 218
+  },
+  {
+   "ticker": "SNDK",
+   "name": "SanDisk",
+   "close": 885.01,
+   "ah": 865.23,
+   "ref": 865.23
+  }
+ ]
+}
