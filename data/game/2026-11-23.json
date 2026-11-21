@@ -1,0 +1,42 @@
+{
+ "date": "2026-11-23",
+ "lockAt": 1795443900,
+ "at": 1795224080,
+ "stocks": [
+  {
+   "ticker": "NVDA",
+   "name": "NVIDIA",
+   "close": 125.53,
+   "ah": 130.01,
+   "ref": 130.01
+  },
+  {
+   "ticker": "HIMS",
+   "name": "Hims & Hers",
+   "close": 14.6,
+   "ah": 15.12,
+   "ref": 15.12
+  },
+  {
+   "ticker": "AMD",
+   "name": "AMD",
+   "close": 424.39,
+   "ah": 439.39,
+   "ref": 439.39
+  },
+  {
+   "ticker": "MRVL",
+   "name": "Marvell",
+   "close": 122.28,
+   "ah": 125.7,
+   "ref": 125.7
+  },
+  {
+   "ticker": "SNDK",
+   "name": "SanDisk",
+   "close": 79.24,
+   "ah": 81.4031,
+   "ref": 81.4031
+  }
+ ]
+}
