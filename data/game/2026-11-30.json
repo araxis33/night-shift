@@ -1,0 +1,42 @@
+{
+ "date": "2026-11-30",
+ "lockAt": 1796048700,
+ "at": 1795828888,
+ "stocks": [
+  {
+   "ticker": "SPCX",
+   "name": "SpaceX",
+   "close": 133.59,
+   "ah": 132.63,
+   "ref": 132.63
+  },
+  {
+   "ticker": "MSFT",
+   "name": "Microsoft",
+   "close": 492.85,
+   "ah": 495.98,
+   "ref": 495.98
+  },
+  {
+   "ticker": "MRNA",
+   "name": "Moderna",
+   "close": 228.64,
+   "ah": 227.44,
+   "ref": 227.44
+  },
+  {
+   "ticker": "ANT",
+   "name": "Anthropic",
+   "close": 91.88,
+   "ah": 91.4085,
+   "ref": 91.4085
+  },
+  {
+   "ticker": "NVDA",
+   "name": "NVIDIA",
+   "close": 150.49,
+   "ah": 149.8,
+   "ref": 149.8
+  }
+ ]
+}
