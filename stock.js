@@ -69,7 +69,8 @@
     const open = marketOpen();
     const trap = st.rt && st.rt.loss >= TRAP;
     const ref = refPrice(ticker, c, shares);
-    const gap = st.dex != null && ref ? (st.dex / ref - 1) * 100 : null;
+    const per = st.dex != null ? st.dex / (st.chain?.multiplier || 1) : null; // per real share (SNDK 8:1 split: 1 token = 8 shares)
+    const gap = per != null && ref ? (per / ref - 1) * 100 : null;
     const [label, col] = trap ? ['no real market', 'var(--red)'] : gap == null ? ['–', '#7d8a97'] : verdict(gap);
     const n = nextOpen();
 
@@ -84,7 +85,7 @@
       tonight = `<div class="tonight">
         <div class="cell"><span>${c ? nyParts(new Date(c.closeAt * 1000)).wd.toUpperCase() + ' CLOSE' : 'LAST CLOSE'}</span><b>${c ? money(c.close) : '–'}</b></div>
         <div class="cell"><span>${open ? 'REAL SHARE' : 'AFTER-HOURS'}</span><b>${open ? (ref != null ? money(ref) : '–') : c && c.ah != null ? money(c.ah) : '–'}</b></div>
-        <div class="cell"><span>BASE NOW</span><b>${money(st.dex)}</b></div>
+        <div class="cell"><span>BASE NOW</span><b>${money(per)}</b></div>
         <div class="cell"><span>${open ? 'GAP TO REAL SHARE' : 'GAP TO LAST TRADE'}</span><b style="color:${col}">${gap == null ? '–' : pct(gap)}</b></div></div>
         <p>${open ? (gap == null ? 'Wall Street is open. The live share did not load, so there is no gap to show.' : `Wall Street is open: on Base, ${ticker} sits ${Math.abs(gap) < 0.05 ? 'right at' : Math.abs(gap).toFixed(1) + '% ' + (gap > 0 ? 'above' : 'below')} the live share.`)
           : gap == null ? '' : Math.abs(gap) < QUIET ? `On Base, ${ticker} sits right at its last real trade.`
@@ -129,7 +130,7 @@
     const box = $('weekends');
     if (!rows.length && !live) { box.innerHTML = '<h3>Past weekends on Base</h3><p>No weekend on record for this stock yet.</p>'; return; }
     box.innerHTML = `<h3>Past weekends on Base</h3><table><tr><th>WEEKEND</th><th class="n wide">FRI CLOSE</th><th class="n">BASE<span class="wide"> BEFORE OPEN</span></th><th class="n">US<span class="wide"> AFTER OPEN</span></th><th><span class="wide">NIGHT CALLED IT?</span><span class="nar">RIGHT?</span></th></tr>`
-      + (live ? `<tr><td>${nyDay(c.closeAt)} – now</td><td class="n wide">${money(c.close)}</td><td class="n"><span class="wk-p">${money(st.dex)} </span><span class="dim">${pct((st.dex / c.close - 1) * 100)}</span></td><td class="n dim"><span class="wide">${n ? utcTime(n) : '–'}</span><span class="nar">at open</span></td><td class="dim">waiting</td></tr>` : '')
+      + (live ? `<tr><td>${nyDay(c.closeAt)} – now</td><td class="n wide">${money(c.close)}</td><td class="n"><span class="wk-p">${money(per)} </span><span class="dim">${pct((per / c.close - 1) * 100)}</span></td><td class="n dim"><span class="wide">${n ? utcTime(n) : '–'}</span><span class="nar">at open</span></td><td class="dim">waiting</td></tr>` : '')
       + rows.map((r) => `<tr><td>${nyDay(r.from)} – ${nyDay(r.to)}</td><td class="n wide">${money(r.close)}</td><td class="n">${r.worst > THIN_RT ? '<span class="dim">not a price</span>' : `<span class="wk-p">${money(r.base)} </span><span class="dim">${pct(r.night)}</span>`}</td><td class="n"><span class="wk-p">${money(r.monday)} </span><span class="dim">${pct(r.open)}</span></td>${verdictCell(r)}</tr>`).join('')
       + `</table><p>${called.length ? `Night pointed the right way <b style="color:var(--fg)">${right} of ${called.length}</b> time${called.length > 1 ? 's' : ''} when it moved ${QUIET}% or more.` : 'No weekend with a real market moved it 0.5% or more.'} A premium at night is a bet, not a forecast.</p>`
       + '<p class="fine">Base before open = the last price logged before the bell, counted only if a $1,000 round trip cost under 2% right then; US after open = about 10 minutes in. From Stock Check\'s price log, every ~4 hours over the weekend.</p>';

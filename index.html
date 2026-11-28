@@ -277,7 +277,8 @@ async function renderTable() {
     if (v.dex == null || loss == null || !c) continue;
     if (loss >= TRAP) { traps.push({ ticker, loss }); continue; }
     const ref = refPrice(ticker, c, shares);
-    live.push({ ticker, symbol, base: v.dex, close: c.close, closeAt: c.closeAt, ref, gap: ref ? (v.dex / ref - 1) * 100 : null, keep: 1000 * (1 - loss / 100) });
+    const base = v.dex / (v.chain?.multiplier || 1); // per real share: after a split one token can hold several
+    live.push({ ticker, symbol, base, close: c.close, closeAt: c.closeAt, ref, gap: ref ? (base / ref - 1) * 100 : null, keep: 1000 * (1 - loss / 100) });
   }
   live.sort((a, b) => Math.abs(b.gap ?? 0) - Math.abs(a.gap ?? 0));
   firstTicker = live[0] ? live[0].ticker : null;

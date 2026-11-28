@@ -38,7 +38,7 @@
       if (!v || !t || w <= 0) continue;
       if (v.dex == null || !v.rt || v.rt.loss >= TRAP) { left.push({ s, loss: v.rt ? v.rt.loss : null }); continue; }
       const ref = refPrice(s.replace(/c$/, ''), c, st.live);
-      rows.push({ s, t, w, dex: v.dex, ref, gap: ref ? (v.dex / ref - 1) * 100 : null, rt: v.rt.loss });
+      rows.push({ s, t, w, dex: v.dex, ref, gap: ref ? (v.dex / (v.chain?.multiplier || 1) / ref - 1) * 100 : null, rt: v.rt.loss });
     }
     return { rows, left };
   }

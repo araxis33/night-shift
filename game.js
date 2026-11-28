@@ -58,8 +58,8 @@
     try {
       const [sd] = await DATA;
       for (const s of st.round.stocks) {
-        const dex = sd.items[s.ticker + 'c']?.dex;
-        if (dex != null) out[s.ticker] = (dex / s.ref - 1) * 100;
+        const v = sd.items[s.ticker + 'c'], dex = v?.dex;
+        if (dex != null) out[s.ticker] = (dex / (v.chain?.multiplier || 1) / s.ref - 1) * 100;
       }
     } catch (e) { /* prices did not load: the rows say so */ }
     return out;

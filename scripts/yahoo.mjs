@@ -12,6 +12,7 @@ export async function baseStocks() {
     base: v.dex ?? null,
     baseAt: v.dexTs ?? null,
     loss: v.rt?.loss ?? null,
+    mult: v.chain?.multiplier || 1, // shares per token (8 for SNDK after its 8:1 split)
   }));
 }
 

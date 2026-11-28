@@ -32,7 +32,8 @@ if (mode === 'night') {
   for (const s of await baseStocks()) {
     const c = closes[s.ticker];
     if (!c || !addr[s.symbol] || s.loss == null || s.loss >= TRAP) continue;
-    const base = await basePrice(addr[s.symbol]);
+    const quote = await basePrice(addr[s.symbol]);
+    const base = quote == null ? null : quote / s.mult; // per real share
     if (base == null) { console.log(`${s.ticker}: no quote`); continue; }
     items[s.ticker] = { base, ref: c.ah ?? c.close };
   }
